@@ -9,8 +9,8 @@ import type { FormInstance } from 'element-plus'
 const props = defineProps({
   show: Boolean,
   initData: {
-    type: Object as PropType<AdFormat | null>,
-    default: null,
+    type: Object as PropType<AdFormat>,
+    default: () => ({}),
   },
 })
 const emit = defineEmits(['update:show', 'after-submit'])
@@ -34,10 +34,13 @@ const formState = reactive({
 })
 
 // sync initData to formState
-watch(() => props.initData, (newValue) => {
-  if (!newValue || !newValue.events.length) return
+watch(() => props.show, (isShow) => {
+  if (!isShow) return
 
-  formState.engList = newValue.events.map((eng) => {
+  const events = props.initData.events
+  if (!events.length) return formState.reset()
+
+  formState.engList = events.map((eng) => {
     const [key, value] = Object.entries(eng)[0]
     return { key, value }
   })
@@ -70,7 +73,6 @@ async function submit() {
 }
 
 function closeDialog() {
-  formState.reset()
   form.value?.clearValidate()
   emit('update:show', false)
 }

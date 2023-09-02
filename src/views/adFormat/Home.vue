@@ -18,7 +18,7 @@ const tableData = ref(dummy)
 // popup form
 const eventForm = reactive({
   isShow: false,
-  data: null as AdFormat | null,
+  data: undefined as AdFormat | undefined,
   open(row: AdFormat) {
     this.data = row
     this.isShow = true
