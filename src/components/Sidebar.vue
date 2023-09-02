@@ -1,12 +1,13 @@
-<script setup lang="ts"></script>
-
 <template>
   <aside>
-    <ElMenu default-active="1">
-      <ElMenuItem index="1">
+    <ElMenu default-active="dashboard" router>
+      <ElMenuItem index="dashboard">
+        <span>Dashboard</span>
+      </ElMenuItem>
+      <ElMenuItem index="page-a">
         <span>Navigator One</span>
       </ElMenuItem>
-      <ElMenuItem index="2">
+      <ElMenuItem index="page-b">
         <span>Navigator Two</span>
       </ElMenuItem>
     </ElMenu>
