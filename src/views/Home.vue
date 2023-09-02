@@ -1,8 +1,9 @@
 <script setup lang="ts">
+
 </script>
 
 <template>
-  <main>
+  <div>
     Home
-  </main>
+  </div>
 </template>
