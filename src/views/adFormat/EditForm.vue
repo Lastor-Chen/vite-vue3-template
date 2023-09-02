@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import {
+  Close as IconClose,
+  Plus as IconPlus,
+} from '@element-plus/icons-vue'
 import type { AdFormat } from './type.d'
 import type { FormInstance } from 'element-plus'
 
@@ -158,14 +162,14 @@ function validDuplicateKeys(rule: object, eng: { key: string, value: string }, c
             },
           ]"
         >
-          <div class="grid grid-cols-[4.5fr_4.5fr_1fr] items-end gap-x-2 w-full">
+          <div class="grid grid-cols-[4.5fr_4.5fr_1fr] items-stretch gap-x-2 w-full">
             <ElInput v-model="eng.key" />
             <ElInput v-model="eng.value" />
             <div>
-              <el-button
-                class="p-[10px]"
+              <ElButton
+                class="!h-full"
                 type="danger"
-                icon="el-icon-close"
+                :icon="IconClose"
                 plain
                 @click="() => formState.removeRow(idx)"
               />
@@ -175,9 +179,8 @@ function validDuplicateKeys(rule: object, eng: { key: string, value: string }, c
       </template>
       <div>
         <ElButton
-          class="p-[10px]"
           type="primary"
-          icon="el-icon-plus"
+          :icon="IconPlus"
           plain
           @click="() => formState.addRow()"
         />

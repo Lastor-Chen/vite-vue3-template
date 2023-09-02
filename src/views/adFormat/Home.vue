@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import EditForm from './EditForm.vue'
+import { Edit as IconEdit } from '@element-plus/icons-vue'
 import type { AdFormat } from './type.d'
 
 // table
@@ -38,7 +39,7 @@ const eventForm = reactive({
     </ElTableColumn>
     <ElTableColumn label="Actions" min-width="1">
       <template #default="{ row }: { row: AdFormat }">
-        <el-button type="success" @click="eventForm.open(row)">Edit</el-button>
+        <ElButton type="success" :icon="IconEdit" @click="eventForm.open(row)" />
       </template>
     </ElTableColumn>
   </ElTable>
