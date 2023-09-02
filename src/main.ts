@@ -1,3 +1,5 @@
+import '@/style.css' // with tailwind css normalize
+
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'

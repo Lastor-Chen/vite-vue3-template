@@ -4,10 +4,10 @@ const count = ref(0)
 
 <template>
   <header>
-    <div class="wrapper">
-      <nav>
+    <div>
+      <nav class="space-x-2">
         <RouterLink to="/">Home</RouterLink>
-        <RouterLink style="margin-left: 4px;" to="/about">About</RouterLink>
+        <RouterLink to="/about">About</RouterLink>
       </nav>
     </div>
   </header>
