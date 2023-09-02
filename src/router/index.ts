@@ -17,9 +17,8 @@ const router = createRouter({
           component: Dashboard,
         },
         {
-          path: 'page-a',
-          name: 'PageA',
-          component: () => import('@/views/PageA.vue'),
+          path: 'ad-format',
+          component: () => import('@/views/adFormat/Home.vue'),
         },
         {
           path: 'page-b',

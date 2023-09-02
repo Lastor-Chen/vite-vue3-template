@@ -1,11 +1,11 @@
 <template>
   <aside>
-    <ElMenu default-active="dashboard" router>
+    <ElMenu class="h-full" default-active="dashboard" router>
       <ElMenuItem index="dashboard">
         <span>Dashboard</span>
       </ElMenuItem>
-      <ElMenuItem index="page-a">
-        <span>Navigator One</span>
+      <ElMenuItem index="ad-format">
+        <span>Ad Format</span>
       </ElMenuItem>
       <ElMenuItem index="page-b">
         <span>Navigator Two</span>
