@@ -2,6 +2,7 @@
 import {
   Close as IconClose,
   Plus as IconPlus,
+  Warning as IconWarning,
 } from '@element-plus/icons-vue'
 import type { FormInstance } from 'element-plus'
 import { putAdFormat } from '@/fetcher/adFormats'
@@ -18,19 +19,19 @@ const emit = defineEmits(['update:show', 'after-submit'])
 
 const form = ref<FormInstance | null>(null)
 const formState = reactive({
-  engList: [{ key: '', value: '' }],
+  events: [{ key: '', value: '' }],
   get initRow() {
     return { key: '', value: '' }
   },
   addRow() {
-    this.engList.push(this.initRow)
+    this.events.push(this.initRow)
   },
   removeRow(index: number) {
-    if (this.engList.length <= 1) return
-    this.engList.splice(index, 1)
+    if (this.events.length <= 1) return
+    this.events.splice(index, 1)
   },
   reset() {
-    this.engList = [this.initRow]
+    this.events = [this.initRow]
   },
 })
 
@@ -41,8 +42,8 @@ watch(() => props.show, (isShow) => {
   const events = props.initData.events
   if (!events.length) return formState.reset()
 
-  formState.engList = events.map((eng) => {
-    const [key, value] = Object.entries(eng)[0]
+  formState.events = events.map((event) => {
+    const [key, value] = Object.entries(event)[0]
     return { key, value }
   })
 })
@@ -56,9 +57,9 @@ async function submit() {
 
   // transform into request body
   const events: AdFormat['events'] = []
-  formState.engList.forEach(eng => {
-    if (!eng.key || !eng.value) return
-    events.push({ [eng.key]: eng.value })
+  formState.events.forEach((event) => {
+    if (!event.key || !event.value) return
+    events.push({ [event.key]: event.value })
   })
 
   console.log('Submit request:\n', {
@@ -92,10 +93,10 @@ function closeDialog() {
 }
 
 /**
- * 檢查單項未填寫, 都填 or 都未填皆為通過, 都未填時 submit 會濾掉
+ * 檢查單項未填寫, 都填 or 都未填皆為通過
  */
-function validDoubleRequired(rule: object, eng: { key: string, value: string }, cb: (error?: Error) => any) {
-  const { key, value } = eng
+function validDoubleRequired(rule: object, row: { key: string, value: string }, cb: (error?: Error) => any) {
+  const { key, value } = row
   const isNotAllInputted = (key && !value) || (!key && value)
   if (isNotAllInputted) return cb(new Error('必須兩項都填寫'))
   cb()
@@ -107,14 +108,14 @@ let isDuplicatesError = false
 /**
  * 檢查 key 不得重複
  */
-function validDuplicateKeys(rule: object, eng: { key: string, value: string }, cb: (error?: Error) => any) {
+function validDuplicateKeys(rule: object, row: { key: string, value: string }, cb: (error?: Error) => any) {
   if (!form.value) return
 
-  if (eng.key) {
+  if (row.key) {
     // 計算重複
     let count = 0
-    const hasDuplicates = formState.engList.some(item => {
-      if (item.key === eng.key) {
+    const hasDuplicates = formState.events.some(item => {
+      if (item.key === row.key) {
         count++
       }
       if (count > 1) return true
@@ -122,7 +123,7 @@ function validDuplicateKeys(rule: object, eng: { key: string, value: string }, c
 
     if (hasDuplicates) {
       isDuplicatesError = true
-      return cb(new Error(`eng 項目 ${eng.key} 已存在`))
+      return cb(new Error(`${row.key} 已存在`))
     }
     // 觸發再驗證, 以清除其他 item 的 error style
     if (isDuplicatesError) {
@@ -141,32 +142,36 @@ function validDuplicateKeys(rule: object, eng: { key: string, value: string }, c
     :before-close="closeDialog"
   >
     <div class="grid grid-cols-[4.5fr_4.5fr_1fr] items-end gap-x-2" style="margin-bottom: 8px; font-size: 16px">
-      <div>
-        <span>eng 項目</span>
+      <div class="flex items-center space-x-1">
+        <span>Event Action</span>
         <ElTooltip
           effect="dark"
-          content="請跟 MTO 取得 eng 參數"
+          content="定義事件 key"
           placement="top"
         >
-          <i class="el-icon-warning-outline"></i>
+          <ElIcon>
+            <IconWarning />
+          </ElIcon>
         </ElTooltip>
       </div>
-      <div>
-        <span>eng 定義</span>
+      <div class="flex items-center space-x-1">
+        <span>Event Label</span>
         <ElTooltip
           effect="dark"
-          content="輸出於廣告成效報告項目"
+          content="定義事件名稱"
           placement="top"
         >
-          <i class="el-icon-warning-outline"></i>
+          <ElIcon>
+            <IconWarning />
+          </ElIcon>
         </ElTooltip>
       </div>
     </div>
 
     <ElForm ref="form" :model="formState">
-      <template v-for="(eng, idx) in formState.engList" :key="idx">
+      <template v-for="(event, idx) in formState.events" :key="idx">
         <ElFormItem
-          :prop="`engList.${idx}`"
+          :prop="`events.${idx}`"
           :rules="[
             {
               validator: validDuplicateKeys,
@@ -179,8 +184,8 @@ function validDuplicateKeys(rule: object, eng: { key: string, value: string }, c
           ]"
         >
           <div class="grid grid-cols-[4.5fr_4.5fr_1fr] items-stretch gap-x-2 w-full">
-            <ElInput v-model="eng.key" />
-            <ElInput v-model="eng.value" />
+            <ElInput v-model="event.key" />
+            <ElInput v-model="event.value" />
             <div>
               <ElButton
                 class="!h-full"
