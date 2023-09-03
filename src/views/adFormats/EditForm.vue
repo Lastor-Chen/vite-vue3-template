@@ -49,12 +49,28 @@ watch(() => props.show, (isShow) => {
   })
 })
 
-async function submit() {
+function closeDialog() {
+  form.value?.clearValidate()
+  emit('update:show', false)
+}
+
+// form submit
+const isFetching = ref(false)
+
+async function beforeSubmit() {
+  if (isFetching.value) return
   if (!form.value) return
 
   const valid = await form.value.validate().catch(() => false)
   if (!valid) return
 
+  isFetching.value = true
+  await submit()
+  closeDialog()
+  isFetching.value = false
+}
+
+async function submit() {
   // transform into request body
   const events: AdFormat['events'] = []
   formState.events.forEach((event) => {
@@ -63,34 +79,21 @@ async function submit() {
   })
 
   // request
-  console.log('Submit request:\n', {
-    id: props.initData.id,
-    body: { events },
-  })
+  console.log('Submit request:\n', { id: props.initData.id, body: { events } })
   const { data, error } = await putAdFormat(props.initData.id, {
     events,
   })
+  if (error) return console.log(error.data.message)
 
-  if (data) {
-    // update parent table data
-    const payload = data.data.data
-    console.log('Submit response:\n', payload)
-    emit('afterSubmit', payload)
+  // update parent table data
+  const payload = data.data.data
+  console.log('Submit response:\n', payload)
 
-    ElMessage({
-      message: '更新成功',
-      type: 'success',
-    })
-  } else {
-    console.log(error.data.message)
-  }
-
-  closeDialog()
-}
-
-function closeDialog() {
-  form.value?.clearValidate()
-  emit('update:show', false)
+  emit('afterSubmit', payload)
+  ElMessage({
+    message: '更新成功',
+    type: 'success',
+  })
 }
 
 /** 當前 row 檢查單項未填寫, 都填 or 都未填皆為通過 */
@@ -196,7 +199,7 @@ const validDuplicateKeys: FormItemRule['validator'] = (rule, row: typeof formSta
     <template #footer>
       <div class="dialog-footer">
         <ElButton @click="closeDialog">取消</ElButton>
-        <ElButton type="primary" @click="() => submit()">儲存</ElButton>
+        <ElButton type="primary" v-loading="isFetching" @click="beforeSubmit">儲存</ElButton>
       </div>
     </template>
   </ElDialog>
