@@ -51,7 +51,7 @@ async function submit() {
   if (!form.value) return
   if (!props.initData) return
 
-  const valid = await form.value.validate().catch(err => err)
+  const valid = await form.value.validate().catch(() => false)
   if (!valid) return
 
   // transform into request body
