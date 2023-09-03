@@ -8,7 +8,7 @@ const route = useRoute()
       <ElMenuItem index="/dashboard">
         <span>Dashboard</span>
       </ElMenuItem>
-      <ElMenuItem index="/ad-format">
+      <ElMenuItem index="/ad-formats">
         <span>Ad Format</span>
       </ElMenuItem>
       <ElMenuItem index="/page-b">

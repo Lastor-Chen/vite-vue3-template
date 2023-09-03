@@ -3,8 +3,9 @@ import {
   Close as IconClose,
   Plus as IconPlus,
 } from '@element-plus/icons-vue'
-import type { AdFormat } from './type.d'
 import type { FormInstance } from 'element-plus'
+import { putAdFormat } from '@/fetcher/adFormats'
+import type { AdFormat } from '@/fetcher/adFormats'
 
 const props = defineProps({
   show: Boolean,
@@ -60,15 +61,19 @@ async function submit() {
     definedEngList.push({ [eng.key]: eng.value })
   })
 
-  // const res = await putAdFormatTypeEngList(props.initData.id, {
-  //   defined_eng_list: definedEngList,
-  // })
-  const res = ''
+  const { data, error } = await putAdFormat(props.initData.id, {
+    events: definedEngList,
+  })
 
-  // update parent table data
-  if (res) {
-    emit('after-submit', res)
+  if (data) {
+    // update parent table data
+    const payload = data.data.data
+    console.log('Submit:\n', payload)
+    emit('after-submit', payload)
+  } else {
+    console.log(error.data.message)
   }
+
   closeDialog()
 }
 
