@@ -124,6 +124,12 @@ function checkDuplicateKey(key: string) {
 
   return hasDuplicateKey ? `${key} 已存在` : ''
 }
+
+// 取得驗證狀態
+const isValid = ref(true)
+const checkValid = () => {
+  form.value?.validate((valid) => isValid.value = valid)
+}
 </script>
 
 <template>
@@ -159,7 +165,7 @@ function checkDuplicateKey(key: string) {
       </div>
     </div>
 
-    <ElForm ref="form" :model="formState">
+    <ElForm ref="form" :model="formState" @focusout="checkValid">
       <template v-for="(event, idx) in formState.events" :key="idx">
         <ElFormItem
           :prop="`events.${idx}`"
@@ -203,7 +209,7 @@ function checkDuplicateKey(key: string) {
     <template #footer>
       <div class="dialog-footer">
         <ElButton @click="closeDialog">取消</ElButton>
-        <ElButton type="primary" v-loading="isFetching" @click="beforeSubmit">儲存</ElButton>
+        <ElButton type="primary" v-loading="isFetching" :disabled="!isValid" @click="beforeSubmit">儲存</ElButton>
       </div>
     </template>
   </ElDialog>
