@@ -62,6 +62,7 @@ async function submit() {
     events.push({ [event.key]: event.value })
   })
 
+  // request
   console.log('Submit request:\n', {
     id: props.initData.id,
     body: { events },
@@ -92,46 +93,71 @@ function closeDialog() {
   emit('update:show', false)
 }
 
-/**
- * 檢查單項未填寫, 都填 or 都未填皆為通過
- */
-function validDoubleRequired(rule: object, row: { key: string, value: string }, cb: (error?: Error) => any) {
+/** 當前 row 檢查單項未填寫, 都填 or 都未填皆為通過 */
+function validDoubleRequired(rule: object, row: typeof formState['initRow'], cb: (error?: Error) => any) {
   const { key, value } = row
   const isNotAllInputted = (key && !value) || (!key && value)
   if (isNotAllInputted) return cb(new Error('必須兩項都填寫'))
   cb()
 }
 
-// 輔助驗證用, 防無限迴圈
-let isDuplicatesError = false
+// FIXME 出現多組重複 key 時, 無法良好運作
+// 輔助再驗證, 防無限迴圈
+const errorFields = new Set<string>()
 
-/**
- * 檢查 key 不得重複
- */
-function validDuplicateKeys(rule: object, row: { key: string, value: string }, cb: (error?: Error) => any) {
+/** 當前 row 檢查 key 不得重複 */
+function validDuplicateKeys(
+  rule: object,
+  row: typeof formState['initRow'],
+  cb: (error?: Error) => any,
+  source: object
+) {
   if (!form.value) return
 
   if (row.key) {
     // 計算重複
     let count = 0
-    const hasDuplicates = formState.events.some(item => {
+    const hasDuplicateKey = formState.events.some(item => {
       if (item.key === row.key) {
         count++
       }
       if (count > 1) return true
     })
 
-    if (hasDuplicates) {
-      isDuplicatesError = true
+    if (hasDuplicateKey) {
+      // 紀錄有 error style 的 field
+      const key = Object.keys(source)[0]
+      errorFields.add(key)
       return cb(new Error(`${row.key} 已存在`))
-    }
-    // 觸發再驗證, 以清除其他 item 的 error style
-    if (isDuplicatesError) {
-      isDuplicatesError = false
-      void form.value.validate().catch(() => void 0)
     }
   }
   cb()
+}
+
+function afterValidate() {
+  if (!form.value) return
+
+  // 再驗證, 以清除其他 item 的 error style
+  // 檢查重複 key
+  const memo: { [key: string]: boolean } = {}
+  const hasDuplicateKeys = formState.events.some((event) => {
+    if (memo[event.key]) return true
+    memo[event.key] = true
+  })
+
+  if (!hasDuplicateKeys && errorFields.size) {
+    revalidate(errorFields)
+  }
+}
+
+async function revalidate(fields: Set<string>) {
+  for (let i = fields.size - 1; i >= 0; i--) {
+    const field = [...fields][i]
+    const isSuccess = await form.value?.validateField(field).catch(() => false)
+    if (isSuccess) {
+      errorFields.delete(field)
+    }
+  }
 }
 </script>
 
@@ -168,7 +194,7 @@ function validDuplicateKeys(rule: object, row: { key: string, value: string }, c
       </div>
     </div>
 
-    <ElForm ref="form" :model="formState">
+    <ElForm ref="form" :model="formState" @validate="afterValidate">
       <template v-for="(event, idx) in formState.events" :key="idx">
         <ElFormItem
           :prop="`events.${idx}`"
