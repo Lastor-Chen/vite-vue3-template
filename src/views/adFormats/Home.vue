@@ -30,6 +30,9 @@ const eventForm = reactive({
     this.data = row
     this.isShow = true
   },
+  afterSubmit() {
+    fetchTableData()
+  }
 })
 </script>
 
@@ -50,5 +53,9 @@ const eventForm = reactive({
       </template>
     </ElTableColumn>
   </ElTable>
-  <EditForm v-model:show="eventForm.isShow" :init-data="eventForm.data" />
+  <EditForm
+    v-model:show="eventForm.isShow"
+    :init-data="eventForm.data"
+    @after-submit="eventForm.afterSubmit"
+  />
 </template>

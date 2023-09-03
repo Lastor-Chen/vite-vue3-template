@@ -33,16 +33,24 @@ const dummyData: AdFormat[] = Array.from({ length: 10 }, (_, idx) => ({
 export function getAdFormats() {
   return tryTo(fakeAxios({
     status: 'success',
-    data: dummyData,
+    // 回來的資料要是新的 reference
+    data: structuredClone(dummyData),
   }))
 }
 
 export function putAdFormat(id: number, body: { events: AdFormatEvent[] }) {
+  // update dummy
+  const row = dummyData.find((item) => item.id === id)
+  if (row) {
+    row.events = body.events
+  }
+
   return tryTo(fakeAxios({
     status: 'success',
     data: {
       id,
-      events: body.events,
+      // 回來的資料要是新的 reference
+      events: structuredClone(body.events),
     }
   }))
 }

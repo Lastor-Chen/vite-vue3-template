@@ -55,21 +55,30 @@ async function submit() {
   if (!valid) return
 
   // transform into request body
-  const definedEngList: AdFormat['events'] = []
+  const events: AdFormat['events'] = []
   formState.engList.forEach(eng => {
     if (!eng.key || !eng.value) return
-    definedEngList.push({ [eng.key]: eng.value })
+    events.push({ [eng.key]: eng.value })
   })
 
+  console.log('Submit request:\n', {
+    id: props.initData.id,
+    body: { events },
+  })
   const { data, error } = await putAdFormat(props.initData.id, {
-    events: definedEngList,
+    events,
   })
 
   if (data) {
     // update parent table data
     const payload = data.data.data
-    console.log('Submit:\n', payload)
+    console.log('Submit response:\n', payload)
     emit('after-submit', payload)
+
+    ElMessage({
+      message: '更新成功',
+      type: 'success',
+    })
   } else {
     console.log(error.data.message)
   }
