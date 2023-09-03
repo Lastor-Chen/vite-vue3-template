@@ -102,9 +102,8 @@ const validDoubleRequired: FormItemRule['validator'] = (rule, row: typeof formSt
 }
 
 /** 當前 row 檢查 key 不得重複 */
-const validDuplicateKeys: FormItemRule['validator'] = (rule, row: typeof formState['initRow'], cb, source) => {
+const validDuplicateKeys: FormItemRule['validator'] = (rule, row: typeof formState['initRow'], cb) => {
   if (!form.value) return
-
   if (row.key) {
     // 計算重複
     let count = 0
@@ -115,44 +114,9 @@ const validDuplicateKeys: FormItemRule['validator'] = (rule, row: typeof formSta
       if (count > 1) return true
     })
 
-    if (hasDuplicateKey) {
-      // 紀錄有 error style 的 field
-      const key = Object.keys(source)[0]
-      errorFields.add(key)
-      return cb(new Error(`${row.key} 已存在`))
-    }
+    if (hasDuplicateKey) return cb(new Error(`${row.key} 已存在`))
   }
   cb()
-}
-
-// FIXME 多組重複 key 時無法運作
-// 輔助再驗證, 防無限迴圈
-const errorFields = new Set<string>()
-
-function afterValidate() {
-  if (!form.value) return
-
-  // 再驗證, 以清除其他 item 的 error style
-  // 檢查重複 key
-  const memo: { [key: string]: boolean } = {}
-  const hasDuplicateKeys = formState.events.some((event) => {
-    if (memo[event.key]) return true
-    memo[event.key] = true
-  })
-
-  if (!hasDuplicateKeys && errorFields.size) {
-    validateErrorFields(errorFields)
-  }
-}
-
-async function validateErrorFields(fields: Set<string>) {
-  for (let i = fields.size - 1; i >= 0; i--) {
-    const field = [...fields][i]
-    const isSuccess = await form.value?.validateField(field).catch(() => false)
-    if (isSuccess) {
-      errorFields.delete(field)
-    }
-  }
 }
 </script>
 
@@ -189,7 +153,7 @@ async function validateErrorFields(fields: Set<string>) {
       </div>
     </div>
 
-    <ElForm ref="form" :model="formState" @validate="afterValidate">
+    <ElForm ref="form" :model="formState">
       <template v-for="(event, idx) in formState.events" :key="idx">
         <ElFormItem
           :prop="`events.${idx}`"
