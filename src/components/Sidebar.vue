@@ -11,9 +11,6 @@ const route = useRoute()
       <ElMenuItem index="/ad-formats">
         <span>Ad Format</span>
       </ElMenuItem>
-      <ElMenuItem index="/page-b">
-        <span>Navigator Two</span>
-      </ElMenuItem>
     </ElMenu>
   </aside>
 </template>

@@ -4,7 +4,7 @@ import {
   Plus as IconPlus,
   Warning as IconWarning,
 } from '@element-plus/icons-vue'
-import type { FormInstance } from 'element-plus'
+import type { FormInstance, FormItemRule } from 'element-plus'
 import { putAdFormat } from '@/fetcher/adFormats'
 import type { AdFormat } from '@/fetcher/adFormats'
 
@@ -15,7 +15,7 @@ const props = defineProps({
     default: () => ({}),
   },
 })
-const emit = defineEmits(['update:show', 'after-submit'])
+const emit = defineEmits(['update:show', 'afterSubmit'])
 
 const form = ref<FormInstance | null>(null)
 const formState = reactive({
@@ -42,6 +42,7 @@ watch(() => props.show, (isShow) => {
   const events = props.initData.events
   if (!events.length) return formState.reset()
 
+  // format data
   formState.events = events.map((event) => {
     const [key, value] = Object.entries(event)[0]
     return { key, value }
@@ -50,7 +51,6 @@ watch(() => props.show, (isShow) => {
 
 async function submit() {
   if (!form.value) return
-  if (!props.initData) return
 
   const valid = await form.value.validate().catch(() => false)
   if (!valid) return
@@ -75,7 +75,7 @@ async function submit() {
     // update parent table data
     const payload = data.data.data
     console.log('Submit response:\n', payload)
-    emit('after-submit', payload)
+    emit('afterSubmit', payload)
 
     ElMessage({
       message: '更新成功',
@@ -94,24 +94,15 @@ function closeDialog() {
 }
 
 /** 當前 row 檢查單項未填寫, 都填 or 都未填皆為通過 */
-function validDoubleRequired(rule: object, row: typeof formState['initRow'], cb: (error?: Error) => any) {
+const validDoubleRequired: FormItemRule['validator'] = (rule, row: typeof formState['initRow'], cb) => {
   const { key, value } = row
   const isNotAllInputted = (key && !value) || (!key && value)
   if (isNotAllInputted) return cb(new Error('必須兩項都填寫'))
   cb()
 }
 
-// FIXME 出現多組重複 key 時, 無法良好運作
-// 輔助再驗證, 防無限迴圈
-const errorFields = new Set<string>()
-
 /** 當前 row 檢查 key 不得重複 */
-function validDuplicateKeys(
-  rule: object,
-  row: typeof formState['initRow'],
-  cb: (error?: Error) => any,
-  source: object
-) {
+const validDuplicateKeys: FormItemRule['validator'] = (rule, row: typeof formState['initRow'], cb, source) => {
   if (!form.value) return
 
   if (row.key) {
@@ -134,6 +125,10 @@ function validDuplicateKeys(
   cb()
 }
 
+// FIXME 多組重複 key 時無法運作
+// 輔助再驗證, 防無限迴圈
+const errorFields = new Set<string>()
+
 function afterValidate() {
   if (!form.value) return
 
@@ -146,11 +141,11 @@ function afterValidate() {
   })
 
   if (!hasDuplicateKeys && errorFields.size) {
-    revalidate(errorFields)
+    validateErrorFields(errorFields)
   }
 }
 
-async function revalidate(fields: Set<string>) {
+async function validateErrorFields(fields: Set<string>) {
   for (let i = fields.size - 1; i >= 0; i--) {
     const field = [...fields][i]
     const isSuccess = await form.value?.validateField(field).catch(() => false)

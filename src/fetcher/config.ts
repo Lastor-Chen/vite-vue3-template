@@ -1,4 +1,4 @@
-export type AxiosResponse<DataType> = {
+type AxiosResponse<DataType> = {
   data: DataType
 }
 
@@ -6,17 +6,17 @@ interface AxiosError<DataType> extends Error {
   response: AxiosResponse<DataType>
 }
 
-export type ResponseSuccess<DataType> = {
+type ResponseSuccess<DataType> = {
   status: 'success'
   data: DataType
 }
-export type ResponseError = {
+type ResponseError = {
   status: 'error'
   message: string
 }
 
-function axiosInstance<T>(response: ResponseSuccess<T>) {
-  return new Promise<AxiosResponse<ResponseSuccess<T>>>((resolve) => {
+function axiosInstance<DataType>(response: ResponseSuccess<DataType>) {
+  return new Promise<AxiosResponse<ResponseSuccess<DataType>>>((resolve) => {
     return setTimeout(() => {
       resolve({ data: response })
     }, 500)
@@ -35,7 +35,6 @@ export default axiosInstance
  */
 export async function tryTo<TSuccess, TError = ResponseError>(promise: Promise<AxiosResponse<TSuccess>>) {
   try {
-    // 這邊拿到的會是 axios interceptors 處理過的值
     const data = await promise
     return { data }
   } catch (err) {

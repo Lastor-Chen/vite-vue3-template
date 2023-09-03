@@ -10,15 +10,6 @@ export type AdFormatEvent = {
   [key: string]: string
 }
 
-const ttt: AdFormat = {
-  id: 1,
-  name: '',
-  events: [
-    { click: '點擊' },
-    { swipe_left: '左滑' },
-  ]
-}
-
 // 假資料
 const dummyData: AdFormat[] = Array.from({ length: 10 }, (_, idx) => ({
   id: idx + 1,

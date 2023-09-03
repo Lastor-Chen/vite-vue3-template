@@ -20,11 +20,6 @@ const router = createRouter({
           path: 'ad-formats',
           component: () => import('@/views/adFormats/Home.vue'),
         },
-        {
-          path: 'page-b',
-          name: 'PageB',
-          component: () => import('@/views/PageB.vue'),
-        },
       ]
     },
     {
