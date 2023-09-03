@@ -114,6 +114,9 @@ const validDuplicateKeys: FormItemRule['validator'] = (rule, row: typeof formSta
 
 /** 檢查輸入的 key 是否重複, 返回 string */
 function checkDuplicateKey(key: string) {
+  // 未填則不檢查
+  if (!key) return ''
+
   let count = 0
   const hasDuplicateKey = formState.events.some(item => {
     if (item.key === key) {
