@@ -59,9 +59,8 @@ const isFetching = ref(false)
 
 async function beforeSubmit() {
   if (isFetching.value) return
-  if (!form.value) return
 
-  const valid = await form.value.validate().catch(() => false)
+  const valid = await form.value?.validate().catch(() => false)
   if (!valid) return
 
   isFetching.value = true
@@ -96,7 +95,7 @@ async function submit() {
   })
 }
 
-/** 當前 row 檢查單項未填寫, 都填 or 都未填皆為通過 */
+/** 驗證單項未填寫, 都填 or 都未填皆為通過 */
 const validDoubleRequired: FormItemRule['validator'] = (rule, row: typeof formState['initRow'], cb) => {
   const { key, value } = row
   const isNotAllInputted = (key && !value) || (!key && value)
@@ -104,22 +103,26 @@ const validDoubleRequired: FormItemRule['validator'] = (rule, row: typeof formSt
   cb()
 }
 
-/** 當前 row 檢查 key 不得重複 */
+/** 驗證 key 不得重複 */
 const validDuplicateKeys: FormItemRule['validator'] = (rule, row: typeof formState['initRow'], cb) => {
-  if (!form.value) return
   if (row.key) {
-    // 計算重複
-    let count = 0
-    const hasDuplicateKey = formState.events.some(item => {
-      if (item.key === row.key) {
-        count++
-      }
-      if (count > 1) return true
-    })
-
-    if (hasDuplicateKey) return cb(new Error(`${row.key} 已存在`))
+    const msg = checkDuplicateKey(row.key)
+    if (msg) return cb(new Error(msg))
   }
   cb()
+}
+
+/** 檢查輸入的 key 是否重複, 返回 string */
+function checkDuplicateKey(key: string) {
+  let count = 0
+  const hasDuplicateKey = formState.events.some(item => {
+    if (item.key === key) {
+      count++
+    }
+    if (count > 1) return true
+  })
+
+  return hasDuplicateKey ? `${key} 已存在` : ''
 }
 </script>
 
@@ -160,6 +163,7 @@ const validDuplicateKeys: FormItemRule['validator'] = (rule, row: typeof formSta
       <template v-for="(event, idx) in formState.events" :key="idx">
         <ElFormItem
           :prop="`events.${idx}`"
+          :error="checkDuplicateKey(event.key)"
           :rules="[
             {
               validator: validDuplicateKeys,
