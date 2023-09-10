@@ -2,7 +2,9 @@
 import EditForm from './EditForm.vue'
 import { Edit as IconEdit } from '@element-plus/icons-vue'
 import { getAdFormats } from '@/fetcher/adFormats'
+import { useEditForm } from './hooks'
 import type { AdFormat, AdFormatEvent } from '@/fetcher/adFormats'
+import Test from './Test.vue'
 
 // table
 const tableData = ref<AdFormat[]>([])
@@ -23,6 +25,7 @@ function event2String(event: AdFormatEvent) {
 }
 
 // popup form
+const editForm = useEditForm()
 const eventForm = reactive({
   isShow: false,
   data: undefined as AdFormat | undefined,
@@ -37,6 +40,7 @@ const eventForm = reactive({
 </script>
 
 <template>
+  <Test />
   <ElTable :data="tableData" header-cell-class-name="!bg-gray-100" border>
     <ElTableColumn prop="id" label="ID" min-width="1" />
     <ElTableColumn prop="name" label="Name" min-width="3" />
@@ -49,13 +53,12 @@ const eventForm = reactive({
     </ElTableColumn>
     <ElTableColumn label="Actions" min-width="1">
       <template #default="{ row }: { row: AdFormat }">
-        <ElButton type="success" :icon="IconEdit" @click="eventForm.open(row)" />
+        <ElButton type="success" :icon="IconEdit" @click="editForm.open(row)" />
       </template>
     </ElTableColumn>
   </ElTable>
+
   <EditForm
-    v-model:show="eventForm.isShow"
-    :init-data="eventForm.data"
     @after-submit="eventForm.afterSubmit"
   />
 </template>

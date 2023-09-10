@@ -7,6 +7,7 @@ import {
 import type { FormInstance, FormItemRule } from 'element-plus'
 import { putAdFormat } from '@/fetcher/adFormats'
 import type { AdFormat } from '@/fetcher/adFormats'
+import { useEditForm } from './hooks'
 
 const props = defineProps({
   show: Boolean,
@@ -18,6 +19,9 @@ const props = defineProps({
 const emit = defineEmits(['update:show', 'afterSubmit'])
 
 const form = ref<FormInstance | null>(null)
+
+const editForm = useEditForm()
+
 const formState = reactive({
   events: [{ key: '', value: '' }],
   get initRow() {
@@ -95,13 +99,7 @@ async function submit() {
   })
 }
 
-/** 驗證單項未填寫, 都填 or 都未填皆為通過 */
-const validDoubleRequired: FormItemRule['validator'] = (rule, row: typeof formState['initRow'], cb) => {
-  const { key, value } = row
-  const isNotAllInputted = (key && !value) || (!key && value)
-  if (isNotAllInputted) return cb(new Error('必須兩項都填寫'))
-  cb()
-}
+const { validDoubleRequired } = useValidator()
 
 /** 驗證 key 不得重複 */
 const validDuplicateKeys: FormItemRule['validator'] = (rule, row: typeof formState['initRow'], cb) => {
@@ -137,9 +135,9 @@ const checkValid = () => {
 
 <template>
   <ElDialog
-    :modelValue="show"
+    :modelValue="editForm.isShow.value"
     :title="initData?.name"
-    :before-close="closeDialog"
+    :before-close="editForm.close"
   >
     <div class="grid grid-cols-[4.5fr_4.5fr_1fr] items-end gap-x-2" style="margin-bottom: 8px; font-size: 16px">
       <div class="flex items-center space-x-1">
@@ -211,9 +209,27 @@ const checkValid = () => {
 
     <template #footer>
       <div class="dialog-footer">
-        <ElButton @click="closeDialog">取消</ElButton>
+        <ElButton @click="editForm.close">取消</ElButton>
         <ElButton type="primary" v-loading="isFetching" :disabled="!isValid" @click="beforeSubmit">儲存</ElButton>
       </div>
     </template>
   </ElDialog>
 </template>
+
+<script lang="ts">
+type InitRow = { key: string, value: string }
+
+function useValidator() {
+  /** 驗證單項未填寫, 都填 or 都未填皆為通過 */
+  const validDoubleRequired: FormItemRule['validator'] = (rule, row: InitRow, cb) => {
+    const { key, value } = row
+    const isNotAllInputted = (key && !value) || (!key && value)
+    if (isNotAllInputted) return cb(new Error('必須兩項都填寫'))
+    cb()
+  }
+
+  return {
+    validDoubleRequired,
+  }
+}
+</script>
